@@ -1,15 +1,16 @@
 SELECT
-  ml_generate_text_result['candidates'][0]['content']['parts'][0]['text'],
-  ml_generate_text_result, prompt
+  TO_JSON(ml_generate_text_result) AS complete_result,
+  prompt
 FROM
   ML.GENERATE_TEXT(
-    MODEL `playground_us.martina_llm_model_g`,
+    MODEL `poc-test-omsg.genai_bq_poc.genai_bq_poc`,
     (
   SELECT
-        CONCAT('Can you read the  the following commit message and subject and determine for each record whether the intent of the commit   was to  fix the code ,  revert it to previous version or neither of something else. Reply with categories: revert, fix, neither ?',' ', subject,' ' ,message)
+        CONCAT('Can you read the following complaint message and company public response and reply with a new apology from the company?', '', consumer_complaint_narrative, '', company_public_response)
         AS prompt
-        from `bigquery-public-data.github_repos.commits` where repo_name[0] like 'kiwicom%'
+        from `bigquery-public-data.cfpb_complaints.complaint_database` 
     ),
     STRUCT(
       0.9 AS temperature,
-      150 AS max_output_tokens));
+      150 AS max_output_tokens))
+LIMIT 20;
